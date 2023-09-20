@@ -1,0 +1,343 @@
+---
+title: "HW2"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-09-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.  
+(a)
+```{r}
+X_50 <- seq(0, 10, length.out = 50)
+X_100 <- seq(0, 10, length.out = 100)
+X_500 <- seq(0, 10, length.out = 500)
+```
+
+(b)
+
+```{r}
+dataset_size <- 10^5
+
+
+dataset_matrix50 <-  matrix(nrow = 10^5, ncol = 50)
+set.seed(1)
+for (n in 1:10^5){
+  lambda <- exp(1 + 0.25 * X_50)
+  Y <- rpois(length(X_50), lambda)
+  dataset_matrix50[n, ] <- Y
+  
+  
+}
+
+norm(dataset_matrix50)
+
+```
+
+```{r}
+dataset_size <- 10^5
+
+
+dataset_matrix100 <-  matrix(nrow = 10^5, ncol = 100)
+set.seed(2)
+for (n in 1:10^5){
+  lambda <- exp(1 + 0.25 * X_100)
+  Y <- rpois(length(X_100), lambda)
+  dataset_matrix100[n, ] <- Y
+  
+  
+}
+
+norm(dataset_matrix100)
+```
+
+```{r}
+dataset_size <- 10^5
+
+
+dataset_matrix500 <-  matrix(nrow = 10^5, ncol = 500)
+set.seed(3)
+for (n in 1:10^5){
+  lambda <- exp(1 + 0.25 * X_500)
+  Y <- rpois(length(X_500), lambda)
+  dataset_matrix500[n, ] <- Y
+  
+  
+}
+
+norm(dataset_matrix500)
+```
+
+```{r}
+sample_list <- list(dataset_matrix50,dataset_matrix100,dataset_matrix500)
+```
+
+(c).  Here is the for loop and lapply comparison of n=50:
+
+```{r}
+system.time(for (i in 1:10^5) model <- glm(sample_list[[1]][i,] ~ X_50, family = "poisson"))
+```
+
+```{r}
+data_frame <- as.data.frame(sample_list[[1]])
+data_frame$X_50 <- X_50
+```
+
+```{r}
+mycolname <- colnames(data_frame)
+mycolname <- mycolname[-51]
+```
+
+```{r}
+system.time(invisible(lapply(mycolname,
+       function(x) glm(data_frame[[x]] ~ data_frame[["X_50"]], family="poisson" ))))
+```
+
+Here is the for loop and lapply comparison of n=100:
+
+```{r}
+system.time(for (i in 1:10^5) model <- glm(sample_list[[2]][i,] ~ X_100, family = "poisson"))
+```
+
+```{r}
+data_frame_100 <- as.data.frame(sample_list[[2]])
+data_frame_100$X_100 <- X_100
+mycolname_100<- colnames(data_frame_100)
+mycolname_100 <- mycolname_100[-101]
+```
+
+```{r}
+system.time(invisible(lapply(mycolname_100,
+       function(x) glm(data_frame_100[[x]] ~ data_frame_100[["X_100"]], family="poisson" ))))
+```
+
+Here is the for loop and lapply comparison of n=500:
+
+```{r}
+system.time(for (i in 1:10^5) model <- glm(sample_list[[3]][i,] ~ X_500, family = "poisson"))
+```
+
+```{r}
+data_frame_500 <- as.data.frame(sample_list[[3]])
+data_frame_500$X_500<- X_500
+mycolname_500<- colnames(data_frame_500)
+mycolname_500 <- mycolname_500[-501]
+```
+
+```{r}
+system.time(invisible(lapply(mycolname_500,
+       function(x) glm(data_frame_500[[x]] ~ data_frame_500[["X_500"]], family="poisson" ))))
+```
+
+Here I can notice that the lapply function is always efficient than the for loop. In my experiment, the lapply always show a better result.
+
+2.  
+
+
+(a) 
+
+```{r}
+whether_in_mandelbrot   <- function(c){
+    z<- 0 
+  
+  
+   for (i in 1:100) {
+    z <- z^2 + c 
+    if (Mod(z) >= 10^6) {
+      #print(z/10^6)
+      return(FALSE)  
+    
+    }
+    
+  }
+  #print(z/10^6)
+  return(TRUE)
+  
+  
+}
+```
+
+(b) 
+
+```{r}
+v <- seq(-1, 1, length.out = 2001)
+```
+
+(c) 
+
+```{r}
+tf_matrix <- matrix(NA,2001,2001)
+for (i in 1:2001) {
+  for (j in 1:2001) {
+    c <- complex(real = v[i], imaginary = v[j])
+    tf_matrix[i, j] <- whether_in_mandelbrot(c)
+  }
+}
+```
+(d)
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+row_names <- v
+col_names <- v
+```
+
+```{r}
+dimnames(tf_matrix) <- list(row_names, col_names)
+```
+
+```{r}
+density_df <- as.data.frame(as.table(tf_matrix))
+```
+
+```{r}
+ggplot(density_df, aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile() +  labs(x = NULL, y = NULL) +   theme_void()+ theme(legend.position = "none")   # Remove both x and y axis
+```
+
+3.  
+
+
+(a) 
+
+```{r}
+A <- list(-pi, 0, 1 + 1i, "statistics", TRUE, NA, -Inf)
+```
+
+```{r}
+myfunction_3 <- function(x) {
+  
+  value <- (1 - (1 - sin(x))^2) / factorial(x)
+  
+  return(value)
+}
+```
+
+```{r}
+#for (i in 1:7){
+  #print(myfunction_3(A[[i]]))
+
+#}
+```
+The above code will gibes the result:
+
+[1] 1.391734e-16
+
+[1] 0
+
+Error in gamma(x + 1) : unimplemented complex function
+
+At the complex value, the calculations terminate.
+
+(b) 
+
+```{r}
+for (i in 1:7){
+  print(try(myfunction_3(A[[i]])))
+  
+  print(paste("This is the",i,"'s loop"))
+  
+}
+```
+
+Based on the result it shows, The following element will t return an error message { 1+1, "statistics", NA, -$\infty$ }.
+
+
+
+(c)
+```{r}
+
+out <- rep(0,7)
+for (i in 1:7){
+    out[i] <- tryCatch(
+        myfunction_3(A[[i]])
+        , 
+        error = function(e) {
+    NaN
+  })
+       
+}
+```
+```{r}
+out
+```
+
+
+4.
+(a)
+```{r}
+my_cv <- function(x){
+  my_mean <- mean(x)
+  my_sd <- sd(x)
+  
+  return(my_sd/my_mean)
+}
+```
+
+(b)
+
+```{r}
+library(Rcpp)
+```
+
+```{r}
+#meanC
+sourceCpp("D:/Desktop/705/HW2/meanC.cpp")
+```
+
+
+```{r}
+myCV(c(1,2,3,4))
+```
+```{r}
+sd(c(1,2,3,4))
+```
+```{r}
+my_cv(c(1,2,3,4))
+```
+
+```{r}
+library(microbenchmark)
+set.seed(1)
+x <- rnorm(5*10^4)
+
+microbenchmark(
+  myCV(x),
+  my_cv(x),
+  times = 1000
+  
+)
+```
+```{r}
+set.seed(2)
+x <- rnorm(5*10^5)
+
+microbenchmark(
+  myCV(x),
+  my_cv(x),
+  times = 1000
+  
+)
+```
+
+
+```{r}
+set.seed(3)
+x <- rnorm(5*10^6)
+
+microbenchmark(
+  myCV(x),
+  my_cv(x),
+  times = 1000
+  
+)
+```
+
+The time is shown above. I notice that, when the sample size is $5\times10^4$, the C++ function use only 2/3 of the total time of R. In the sample size of $5\times10^5$ and $5\times10^6$, it also show the same performance.
